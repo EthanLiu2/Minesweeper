@@ -1,12 +1,14 @@
 import de.bezier.guido.*;
-int NUM_ROWS=5; 
-int NUM_COLS = 5;
-int NUM_MINES=5;
+int NUM_ROWS=10; 
+int NUM_COLS =10;
+int NUM_MINES=25;
 private ArrayList <MSButton> mines= new ArrayList<MSButton>();
+private ArrayList <MSButton> safezone= new ArrayList<MSButton>();
 private MSButton[][] buttons=new MSButton[NUM_ROWS][NUM_COLS];
+private boolean mineSet=false;
 void setup ()
 {
-  size(400, 400);
+  size(400, 450);
   textAlign(CENTER, CENTER);
 
   // make the manager
@@ -17,28 +19,34 @@ void setup ()
       buttons[r][c]=new MSButton(r, c);
     }
   }
-
-
-
-  setMines();
+  //setMines();
 }
-public void setMines()
+public void setMines(int r, int c)
 {
-
+  safezone.add(buttons[r][c]);
+  for (int R=r-1; R<=r+1; R++) {
+    for (int C=c-1; C<=c+1; C++) {
+      if (isValid(R, C)) {
+        safezone.add(buttons[R][C]);
+      }
+    }
+  }
   while (mines.size()<NUM_MINES) {
     int row= (int)(Math.random()*NUM_ROWS);
     int col=(int)(Math.random()*NUM_COLS);
-    if (!mines.contains(buttons[row][col])) {
+    if (!mines.contains(buttons[row][col])&&!safezone.contains(buttons[row][col])) {
       mines.add(buttons[row][col]);
     }
   }
 }
-
 public void draw ()
 {
-  background( 0 );
+  background( 255 );
   if (isWon() == true)
     displayWinningMessage();
+  if (isLost()==true) {
+    displayLosingMessage();
+  }
 }
 public boolean isWon()
 {
@@ -51,9 +59,25 @@ public boolean isWon()
   }
   return true;
 }
+public boolean isLost() {
+
+  for (int r = 0; r < NUM_ROWS; r++) {
+    for (int c = 0; c < NUM_COLS; c++) {
+      if (mines.contains(buttons[r][c]) && buttons[r][c].clicked&& !buttons[r][c].isFlagged()) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 public void displayLosingMessage()
 {
-    for (int r = 0; r < buttons.length; r++) {
+  pushMatrix();
+  fill(0);
+  text("You Lost...", 200, 425);
+  popMatrix();
+  for (int r = 0; r < buttons.length; r++) {
     for (int c = 0; c < buttons[r].length; c++) {
       if (mines.contains(buttons[r][c]) && buttons[r][c].isClicked() == false) {
         buttons[r][c].setLabel("!!");
@@ -61,10 +85,13 @@ public void displayLosingMessage()
       }
     }
   }
-  System.out.println("You Lose!");
 }
 public void displayWinningMessage()
 {
+  pushMatrix();
+  fill(0);
+  text("You Won!", 200, 425);
+  popMatrix();
   System.out.println("You Win!");
 }
 public boolean isValid(int row, int col) {
@@ -117,6 +144,10 @@ public class MSButton
   public void mousePressed () 
   {
     clicked = true;
+    if (mouseButton==LEFT&&!mineSet) {
+      setMines(myRow, myCol);
+      mineSet=true;
+    }
     if (mouseButton==RIGHT) {
       if (flagged==false) {
         flagged=true;
@@ -124,22 +155,18 @@ public class MSButton
         flagged=false;
         clicked=false;
       }
-    } else if ( mines.contains(buttons[myRow][myCol])) {
+    } else if ( mines.contains(this)) {
       displayLosingMessage();
-    } else if (countMines(myRow,myCol)>0) {
-   myLabel=""+countMines(myRow,myCol);
-    }
-else
- for (int r = myRow - 1; r <= myRow + 1; r++) {
-          for (int c = myCol - 1; c <= myCol + 1; c++) {
-            if (isValid(r, c)&&!buttons[r][c].isClicked()) {
-              buttons[r][c].mousePressed();
-                }
-            }
+    } else if (countMines(myRow, myCol)>0) {
+      myLabel=""+countMines(myRow, myCol);
+    } else
+      for (int r = myRow - 1; r <= myRow + 1; r++) {
+        for (int c = myCol - 1; c <= myCol + 1; c++) {
+          if (isValid(r, c)&&!buttons[r][c].isClicked()) {
+            buttons[r][c].mousePressed();
           }
-
-    
-    
+        }
+      }
   }
   public void draw () 
   {    
@@ -147,7 +174,7 @@ else
       fill(0);
     else if ( clicked && mines.contains(this) ) 
       fill(255, 0, 0);
-     
+
     else if (clicked)
       fill( 200 );
     else 
@@ -169,14 +196,12 @@ else
   {
     return flagged;
   }
-  public boolean isClicked(){
-  return clicked;
+  public boolean isClicked() {
+    return clicked;
   }
-  public void bomb(){
-  clicked=true;
+  public void bomb() {
+    clicked=true;
   }
 }
-
-
 
 
