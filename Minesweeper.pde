@@ -99,7 +99,6 @@ public void displayWinningMessage()
   fill(0);
   text("You Won!", 200, 425);
   popMatrix();
-  System.out.println("You Win!");
 }
 public boolean isValid(int row, int col) {
   if (row<NUM_ROWS&&col<NUM_COLS&&0<=row&&0<=col) {
@@ -118,15 +117,12 @@ public int countMines(int row, int col)
       }
     }
   }
-
   if (mines.contains(buttons[row][col])) {
     numMines--;
   }
 
   return numMines;
 }
-
-
 public class MSButton
 {
   private int myRow, myCol;
@@ -213,5 +209,3 @@ public class MSButton
     clicked=true;
   }
 }
-
-
