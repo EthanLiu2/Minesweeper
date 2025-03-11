@@ -6,6 +6,7 @@ private ArrayList <MSButton> mines= new ArrayList<MSButton>();
 private ArrayList <MSButton> safezone= new ArrayList<MSButton>();
 private MSButton[][] buttons=new MSButton[NUM_ROWS][NUM_COLS];
 private boolean mineSet=false;
+private boolean gameOver=false;
 void setup ()
 {
   size(400, 450);
@@ -41,6 +42,7 @@ public void setMines(int r, int c)
 }
 public void draw ()
 {
+  if(!gameOver)
   background( 255 );
   if (isWon() == true)
     displayWinningMessage();
@@ -50,6 +52,8 @@ public void draw ()
 }
 public boolean isWon()
 {
+  if(gameOver)
+  return false;
   for (int r = 0; r < NUM_ROWS; r++) {
     for (int c = 0; c < NUM_COLS; c++) {
       if (!mines.contains(buttons[r][c]) && !buttons[r][c].clicked) {
@@ -57,13 +61,16 @@ public boolean isWon()
       }
     }
   }
+  gameOver=true;
   return true;
 }
 public boolean isLost() {
-
+  if(gameOver)
+  return false;
   for (int r = 0; r < NUM_ROWS; r++) {
     for (int c = 0; c < NUM_COLS; c++) {
       if (mines.contains(buttons[r][c]) && buttons[r][c].clicked&& !buttons[r][c].isFlagged()) {
+        gameOver=true;
         return true;
       }
     }
@@ -143,6 +150,8 @@ public class MSButton
   // called by manager
   public void mousePressed () 
   {
+    if(gameOver)
+    return;
     clicked = true;
     if (mouseButton==LEFT&&!mineSet) {
       setMines(myRow, myCol);
@@ -157,6 +166,7 @@ public class MSButton
       }
     } else if ( mines.contains(this)) {
       displayLosingMessage();
+      gameOver=true;
     } else if (countMines(myRow, myCol)>0) {
       myLabel=""+countMines(myRow, myCol);
     } else
